@@ -42,6 +42,8 @@ GroveRoomba::GroveRoomba(int pintx, int pinrx)
     _select_storage();
 
     mode = MODE_OFF;
+
+    sendOpcode(OC_START);
 }
 
 bool GroveRoomba::write_mode(int mode) {
