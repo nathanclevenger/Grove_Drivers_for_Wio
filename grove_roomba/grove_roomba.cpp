@@ -97,7 +97,7 @@ bool GroveRoomba::write_drive_radius(float vel, float radius) {
 
   suli_uart_write_bytes(uart, cmd, 5);
 
-  return true
+  return true;
 }
 
 
