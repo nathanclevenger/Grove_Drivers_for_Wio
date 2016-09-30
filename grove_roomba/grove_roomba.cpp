@@ -69,7 +69,9 @@ bool GroveRoomba::write_mode(int mode) {
 }
 
 bool GroveRoomba::write_dock() const {
-  return sendOpcode(OC_DOCK);
+  uint8_t buff[] = { 143 };
+  suli_uart_write_bytes(uart, buff, 1);
+  return true;
 }
 
 
@@ -117,7 +119,6 @@ void GroveRoomba::_drain_uart()
 }
 
 bool GroveRoomba::sendOpcode(const Opcode& code) {
-  uint8_t buff[1] = { (uint8_t)code };
-  suli_uart_write_bytes(uart, buff, 1);
+
   return true;
 }
