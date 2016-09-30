@@ -242,9 +242,6 @@ public:
       IR_CHAR_VIRTUAL_WALL = 162
     };
 
-    // Error handling method
-    char *get_last_error()
-
 
 private:
 
@@ -255,8 +252,6 @@ private:
     void _drain_uart();
 
     bool sendOpcode(const Opcode& code);
-
-    char *error_desc
 
     RoombaMode mode;
 

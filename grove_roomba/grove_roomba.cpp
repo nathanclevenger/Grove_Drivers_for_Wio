@@ -121,8 +121,3 @@ bool GroveRoomba::sendOpcode(const Opcode& code) {
   suli_uart_write_bytes(uart, buff, 1);
   return true;
 }
-
-char *get_last_error()
-{
-  return error_desc;
-};
