@@ -31,6 +31,7 @@
 #include "grove_roomba.h"
 
 #define BOUND_CONST(val,min,max) (val<min?min:(val>max?max:val))
+#define BOUND(val,min,max) (val = BOUND_CONST(val,min,max))
 
 GroveRoomba::GroveRoomba(int pintx, int pinrx)
 {
@@ -47,16 +48,16 @@ bool GroveRoomba::write_mode(int mode) {
   bool ret;
   switch (mode) {
     case MODE_OFF:
-      ret = serial->sendOpcode(OC_POWER);
+      ret = sendOpcode(OC_POWER);
       break;
     case MODE_PASSIVE:
-      ret = serial->sendOpcode(OC_START);
+      ret = sendOpcode(OC_START);
       break;
     case MODE_SAFE:
-      ret = serial->sendOpcode(OC_SAFE);
+      ret = sendOpcode(OC_SAFE);
       break;
     case MODE_FULL:
-      ret = serial->sendOpcode(OC_FULL);
+      ret = sendOpcode(OC_FULL);
       break;
     default:
       //CERR("[create::Create] ", "cannot set robot to mode '" << mode << "'");
@@ -102,6 +103,11 @@ bool GroveRoomba::write_drive_radius(float vel, float radius) {
   return true;
 }
 
+bool GroveRoomba::sendOpcode(const Opcode& code) {
+  uint8_t cmd[1] = { code };
+  suli_uart_write_bytes(uart, cmd, 1);
+  return true;
+}
 
 void GroveRoomba::_select_storage()
 {
@@ -116,9 +122,4 @@ void GroveRoomba::_drain_uart()
     {
         suli_uart_read(uart);
     }
-}
-
-bool GroveRoomba::sendOpcode(const Opcode& code) {
-
-  return true;
 }

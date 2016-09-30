@@ -33,7 +33,7 @@
 #include "suli2.h"
 
 //GROVE_NAME        "Grove - Roomba"
-//SKU               iRobot Create 2
+//SKU               b842dd20-86b6-11e6-ae22-56b6b6499611
 //IF_TYPE           UART
 //IMAGE_URL         http://www.irobotweb.com/~/media/MainSite/Images/About/STEM/Create/create-overview.png
 //DESCRIPTION       "iRobot Create is a hobbyist robot manufactured by iRobot that was introduced in 2007 and based on their Roomba vacuum cleaning platform. The iRobot Create is explicitly designed for robotics development and improves the experience beyond simply hacking the Roomba."
@@ -258,8 +258,6 @@ private:
     static const float MAX_RADIUS = 2.0;
     static const float STRAIGHT_RADIUS = 32.768;
     static const float IN_PLACE_RADIUS = 0.001;
-    static const float PI = 3.14159;
-    static const float TWO_PI = 6.28318;
     static const float EPS = 0.0001;
 
     inline float normalizeAngle(const float& angle) {
