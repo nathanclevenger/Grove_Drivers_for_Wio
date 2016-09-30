@@ -73,7 +73,7 @@ bool GroveRoomba::write_dock() const {
 }
 
 
-bool GroveRoomba::write_drive_radius(const float& vel, const float& radius) {
+bool GroveRoomba::write_drive_radius(float vel, float radius) {
   // Bound velocity
   float boundedVel = BOUND_CONST(vel, -0.5, 0.5);
 

@@ -69,7 +69,7 @@ public:
      *                       turn in place clockwise = -CREATE_2_IN_PLACE_RADIUS
      * @return bool - true if successful, false otherwise
      */
-    bool write_drive_radius(const float velocity, const float radius);
+    bool write_drive_radius(float velocity, float radius);
 
 
     enum SensorPacketID {
