@@ -38,6 +38,8 @@ GroveRoomba::GroveRoomba(int pintx, int pinrx)
     this->uart = (UART_T *)malloc(sizeof(UART_T));
     this->timer = (TIMER_T *)malloc(sizeof(TIMER_T));
 
+    last_error="no error";
+
     suli_uart_init(uart, pintx, pinrx, 19200);
 
     sendOpcode(OC_START);
@@ -161,11 +163,74 @@ bool GroveRoomba::write_turn_radius_degrees(float vel, float radius, float degre
   return write_drive_radius(vel, radius);
 }
 
+int32_t GroveRoomba::read_sensor(uint8_t sensor) {
+  uint8_t cmd[2] = { OC_SENSORS, sensor };
+  _drain_uart();
+  suli_uart_write_bytes(uart, cmd, 2);
+  suli_delay_ms(1);
+
+  int dataSize = 1;
+
+  if (sensor == ID_VOLTAGE ||
+      sensor == ID_CURRENT ||
+      sensor == ID_CHARGE ||
+      sensor == ID_CAPACITY ||
+      sensor == ID_LEFT_ENC ||
+      sensor == ID_RIGHT_ENC ||
+      sensor == ID_LIGHT_LEFT ||
+      sensor == ID_LIGHT_FRONT_LEFT ||
+      sensor == ID_LIGHT_CENTER_LEFT ||
+      sensor == ID_LIGHT_CENTER_RIGHT ||
+      sensor == ID_LIGHT_FRONT_RIGHT ||
+      sensor == ID_LIGHT_RIGHT) {
+    dataSize = 2;
+  }
+
+  int expectedBytes = 4 + dataSize;
+
+  byte data[expectedBytes];
+  int n = suli_uart_read_bytes_timeout(uart,data,expectedBytes,100);
+
+  if (n != expectedBytes)
+  {
+    last_error="too few bytes read";
+    return false;
+  }
+
+  // checksum :
+  int checksum = 0;
+  for (size_t i = 0; i < expectedBytes; i++) {
+    checksum = checksum + (byte)data[i];
+  }
+
+  if (1 + (0xFF ^ (byte)checksum) != data[expectedBytes - 1])
+  {
+    last_error="checksum error";
+    return false;
+  }
+
+  switch (dataSize) {
+    case 1:
+      return (int)data[4];
+      break;
+    case 2:
+      return (int)data[4] * 256 + (int)data[5];
+      break;
+    default:
+      last_error="invalid packet length";
+      return false;
+  }
+}
 
 bool GroveRoomba::sendOpcode(const Opcode& code) {
   uint8_t cmd[1] = { code };
   suli_uart_write_bytes(uart, cmd, 1);
   return true;
+}
+
+const char* GroveRoomba::get_last_error(void)
+{
+   return last_error;
 }
 
 void GroveRoomba::_drain_uart()

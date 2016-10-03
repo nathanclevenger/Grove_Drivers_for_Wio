@@ -156,6 +156,12 @@ public:
      */
     bool write_turn_radius_degrees(float velocity, float radius, float degrees);
 
+    /** Read a value from a specified sensor
+     * @param sensor is the SensorPacketID
+     * @return int32_t - value from the sensor
+     */
+    int32_t read_sensor(uint8_t sensor);
+
     enum SensorPacketID {
       ID_GROUP_0 = 0,
       ID_GROUP_1 = 1,
@@ -326,6 +332,8 @@ public:
       IR_CHAR_VIRTUAL_WALL = 162
     };
 
+    const char* get_last_error(void);
+
 private:
 
     UART_T *uart;
@@ -336,6 +344,8 @@ private:
     bool sendOpcode(const Opcode& code);
 
     RoombaMode mode;
+
+    const char* last_error;
 
     static const float MAX_RADIUS = 2.0;
     static const float STRAIGHT_RADIUS = 32.768;
