@@ -40,7 +40,7 @@ GroveRoomba::GroveRoomba(int pintx, int pinrx)
 
     suli_uart_init(uart, pintx, pinrx, 19200);
 
-    write_mode(OC_START);
+    sendOpcode(OC_START);
 }
 
 bool GroveRoomba::write_mode(int mode) {
