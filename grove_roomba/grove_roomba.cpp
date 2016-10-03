@@ -36,12 +36,11 @@
 GroveRoomba::GroveRoomba(int pintx, int pinrx)
 {
     this->uart = (UART_T *)malloc(sizeof(UART_T));
+    this->timer = (TIMER_T *)malloc(sizeof(TIMER_T));
 
     suli_uart_init(uart, pintx, pinrx, 19200);
 
-    _select_storage();
-
-    mode = MODE_OFF;
+    write_mode(OC_START);
 }
 
 bool GroveRoomba::write_mode(int mode) {
@@ -69,10 +68,24 @@ bool GroveRoomba::write_mode(int mode) {
   return ret;
 }
 
-bool GroveRoomba::write_dock() const {
-  uint8_t buff[] = { 143 };
-  suli_uart_write_bytes(uart, buff, 1);
-  return true;
+bool GroveRoomba::write_mode_off() {
+  return write_mode(MODE_OFF);
+}
+
+bool GroveRoomba::write_mode_passive() {
+  return write_mode(MODE_PASSIVE);
+}
+
+bool GroveRoomba::write_mode_safe() {
+  return write_mode(MODE_SAFE);
+}
+
+bool GroveRoomba::write_mode_full() {
+  return write_mode(MODE_FULL);
+}
+
+bool GroveRoomba::write_dock() {
+  return sendOpcode(OC_DOCK);
 }
 
 
@@ -103,17 +116,56 @@ bool GroveRoomba::write_drive_radius(float vel, float radius) {
   return true;
 }
 
+bool GroveRoomba::write_drive_straight(float vel) {
+  return write_drive_radius(vel, STRAIGHT_RADIUS);
+}
+
+bool GroveRoomba::write_drive_straight_duration(float vel, float duration) {
+  suli_timer_install(timer, duration * 1000000, grove_roomba_timer_interrupt_handler, this, false);
+  return write_drive_radius(vel, STRAIGHT_RADIUS);
+}
+
+bool GroveRoomba::write_drive_straight_distance(float vel, float distance) {
+  return write_drive_straight_duration(vel, distance / vel);
+}
+
+bool GroveRoomba::write_turn_in_place_counter_clockwise(float vel) {
+  return write_drive_radius(vel, IN_PLACE_RADIUS);
+}
+
+bool GroveRoomba::write_turn_in_place_clockwise(float vel) {
+  return write_drive_radius(vel, -IN_PLACE_RADIUS);
+}
+
+bool GroveRoomba::write_turn_in_place_counter_clockwise_duration(float vel, float duration) {
+  suli_timer_install(timer, duration * 1000000, grove_roomba_timer_interrupt_handler, this, false);
+  return write_drive_radius(vel, IN_PLACE_RADIUS);
+}
+
+bool GroveRoomba::write_turn_in_place_clockwise_duration(float vel, float duration) {
+  suli_timer_install(timer, duration * 1000000, grove_roomba_timer_interrupt_handler, this, false);
+  return write_drive_radius(vel, -IN_PLACE_RADIUS);
+}
+
+bool GroveRoomba::write_turn_in_place_counter_clockwise_degrees(float vel, float degrees) {
+  return write_turn_in_place_counter_clockwise_duration(vel, (degrees / 360) * (PI * AXLE_LENGTH) / vel);
+}
+
+bool GroveRoomba::write_turn_in_place_clockwise_degrees(float vel, float degrees) {
+  return write_turn_in_place_clockwise_duration(vel, (degrees / 360) * (PI * AXLE_LENGTH) / vel);
+}
+
+bool GroveRoomba::write_turn_radius_degrees(float vel, float radius, float degrees) {
+  float duration = (degrees / 360) * (TWO_PI * radius) / vel;
+  suli_timer_install(timer, duration * 1000000, grove_roomba_timer_interrupt_handler, this, false);
+  return write_drive_radius(vel, radius);
+}
+
+
 bool GroveRoomba::sendOpcode(const Opcode& code) {
   uint8_t cmd[1] = { code };
   suli_uart_write_bytes(uart, cmd, 1);
   return true;
-}
-
-void GroveRoomba::_select_storage()
-{
-    uint8_t buff[8] = { 0x7e, 0xff, 0x06, 0x09, 0x00, 0x00, 0x02, 0xef };
-
-    suli_uart_write_bytes(uart, buff, 8);
 }
 
 void GroveRoomba::_drain_uart()
@@ -122,4 +174,10 @@ void GroveRoomba::_drain_uart()
     {
         suli_uart_read(uart);
     }
+}
+
+static void grove_roomba_timer_interrupt_handler(void *para)
+{
+  GroveRoomba *g = (GroveRoomba *)para;
+  g->write_drive_straight(0);
 }

@@ -53,24 +53,108 @@ public:
      */
     bool write_mode(int mode);
 
-
-    /** Starts the docking behaviour.
-     * Changes mode to MODE_PASSIVE.
+    /** Change Create mode to Off.
      * @return bool - true if successful, false otherwise
      */
-    bool write_dock() const;
+    bool write_mode_off();
 
+    /** Change Create mode to Passive.
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_mode_passive();
+
+    /** Change Create mode to Safe.
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_mode_safe();
+
+    /** Change Create mode to Full.
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_mode_full();
+
+    /** Change mode to Seek the Dock.
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_dock();
 
     /** Set the average wheel velocity and turning radius of Create.
      * @param velocity is in m/s bounded between [-0.5, 0.5]
      * @param radius in meters.
-     *        Special cases: drive straight = CREATE_2_STRAIGHT_RADIUS,
-     *                       turn in place counter-clockwise = CREATE_2_IN_PLACE_RADIUS,
-     *                       turn in place clockwise = -CREATE_2_IN_PLACE_RADIUS
+     *        Special cases: drive straight = 32.768,
+     *                       turn in place counter-clockwise = 0.001,
+     *                       turn in place clockwise = -0.001
      * @return bool - true if successful, false otherwise
      */
     bool write_drive_radius(float velocity, float radius);
 
+    /** Drive straight at an average wheel velocity
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_drive_straight(float velocity);
+
+    /** Drive straight at an average wheel velocity for specified time
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @param duration is in seconds
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_drive_straight_duration(float velocity, float duration);
+
+    /** Drive straight at an average wheel velocity for specified distance
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @param distance is in meters
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_drive_straight_distance(float velocity, float distance);
+
+    /** Turn in place to the left
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_turn_in_place_counter_clockwise(float velocity);
+
+    /** Turn in place to the right
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_turn_in_place_clockwise(float velocity);
+
+    /** Turn in place to the left for a specified time
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @param duration is in seconds
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_turn_in_place_counter_clockwise_duration(float velocity, float duration);
+
+    /** Turn in place to the right for a specified time
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @param duration is in seconds
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_turn_in_place_clockwise_duration(float velocity, float duration);
+
+    /** Turn in place to the left to a specified angle
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @param degrees to turn [-360.0, 360.0]
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_turn_in_place_counter_clockwise_degrees(float velocity, float degrees);
+
+    /** Turn in place to the right to a specified angle
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @param degrees to turn [-360.0, 360.0]
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_turn_in_place_clockwise_degrees(float velocity, float degrees);
+
+    /** Turn in place to a specified angle
+     * @param velocity is in m/s bounded between [-0.5, 0.5]
+     * @param radius in meters
+     * @param degrees to turn [-360.0, 360.0]
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_turn_radius_degrees(float velocity, float radius, float degrees);
 
     enum SensorPacketID {
       ID_GROUP_0 = 0,
@@ -242,12 +326,10 @@ public:
       IR_CHAR_VIRTUAL_WALL = 162
     };
 
-
 private:
 
     UART_T *uart;
-
-    void _select_storage();
+    TIMER_T *timer;
 
     void _drain_uart();
 
@@ -259,6 +341,7 @@ private:
     static const float STRAIGHT_RADIUS = 32.768;
     static const float IN_PLACE_RADIUS = 0.001;
     static const float EPS = 0.0001;
+    static const float AXLE_LENGTH = 0.235;
 
     inline float normalizeAngle(const float& angle) {
       float a = angle;
@@ -268,5 +351,7 @@ private:
     };
 
 };
+
+static void grove_roomba_timer_interrupt_handler(void *para);
 
 #endif
