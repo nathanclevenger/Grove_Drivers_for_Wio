@@ -163,7 +163,7 @@ bool GroveRoomba::write_turn_radius_degrees(float vel, float radius, float degre
   return write_drive_radius(vel, radius);
 }
 
-int32_t GroveRoomba::read_sensor(uint8_t sensor) {
+bool GroveRoomba::read_sensor(uint16_t *value, uint8_t sensor) {
   uint8_t cmd[2] = { OC_SENSORS, sensor };
   _drain_uart();
   suli_uart_write_bytes(uart, cmd, 2);
@@ -211,10 +211,12 @@ int32_t GroveRoomba::read_sensor(uint8_t sensor) {
 
   switch (dataSize) {
     case 1:
-      return (int)data[4];
+      value = (int)data[4];
+      return true;
       break;
     case 2:
-      return (int)data[4] * 256 + (int)data[5];
+      value = (int)data[4] * 256 + (int)data[5];
+      return true;
       break;
     default:
       last_error="invalid packet length";

@@ -157,10 +157,11 @@ public:
     bool write_turn_radius_degrees(float velocity, float radius, float degrees);
 
     /** Read a value from a specified sensor
+     * @param value is the value from sensor
      * @param sensor is the SensorPacketID
-     * @return int32_t - value from the sensor
+     * @return bool - true if successful, false otherwise
      */
-    int32_t read_sensor(uint8_t sensor);
+    bool read_sensor(uint16_t *value, uint8_t sensor);
 
     enum SensorPacketID {
       ID_GROUP_0 = 0,

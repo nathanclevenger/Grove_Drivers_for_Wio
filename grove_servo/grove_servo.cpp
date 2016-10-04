@@ -72,17 +72,34 @@ bool GroveServo::write_angle_motion_in_seconds(int degree, int seconds)
 
 bool GroveServo::write_move_over_time(int degree_start, int degree_end, int seconds)
 {
-    last_degree = degree;
-    degree = constrain(degree, 0, 180);
+    last_degree = degree_start;
+    degree_start = constrain(degree_start, 0, 180);
+    degree_end = constrain(degree_end, 0, 180);
     percent_start = 10 * degree_start / 180 + 2.5;
     percent_end = 10 * degree_end / 180 + 2.5;
-    percent_increment = (percent_end - percent_start) / (seconds / 50);
+    percent_increment = (percent_end - percent_start) / (seconds * 10);
+    percent_current = percent_start;
     suli_pwm_frequency(this->io, 50);
-    suli_pwm_output(this->io, percent);
-
-    suli_timer_install(timer, 20000, grove_servo_move_timer_interrupt_handler, this, true);
+    suli_pwm_output(this->io, percent_start);
+    suli_soft_timer_install(timer, 100, grove_servo_move_timer_interrupt_handler, this, true);
+    //suli_timer_install(timer, 100000, grove_servo_move_timer_interrupt_handler, this, true);
 
     return true;
+}
+
+float GroveServo::get_next_move_increment()
+{
+  percent_current = percent_current + percent_increment;
+
+  if (percent_increment > 0 && percent_current >= percent_end) {
+    suli_timer_remove(timer);
+    return percent_end;
+  } else if (percent_increment < 0 && percent_current <= percent_end) {
+    suli_timer_remove(timer);
+    return percent_end;
+  }
+
+  return percent_current;
 }
 
 bool GroveServo::read_angle(int *degree)
@@ -101,15 +118,7 @@ static void grove_servo_move_timer_interrupt_handler(void *para)
 {
     GroveServo *g = (GroveServo *)para;
 
-    g->percent_current = g->percent_current + g->percent_increment;
-
-    suli_pwm_frequency(this->io, 50);
-    suli_pwm_output(this->io, g->percent_current);
-
-    if (g->percent_increment > 0 && g->percent_current >= percent_end) {
-      suli_timer_remove(g->timer);
-    } else if (g->percent_increment < 0 && g->percent_current <= percent_end) {
-      suli_timer_remove(g->timer);
-    }
+    suli_pwm_frequency(g->io, 50);
+    suli_pwm_output(g->io, g->get_next_move_increment());
 
 }

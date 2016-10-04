@@ -77,7 +77,7 @@ public:
      *
      * @return bool
      */
-    bool write_move_over_time(int degree_start, int degree_end, int seconds)
+    bool write_move_over_time(int degree_start, int degree_end, int seconds);
 
     /**
      * Read back the angle of this servo
@@ -88,7 +88,7 @@ public:
      */
     bool read_angle(int *degree);
 
-
+    float get_next_move_increment();
 
     PWM_T *io;
     TIMER_T *timer;
@@ -97,10 +97,13 @@ public:
     float percent_start;
     float percent_end;
     float percent_increment;
+    float percent_current;
 
 };
 
 static void grove_servo_timer_interrupt_handler(void *para);
+
+static void grove_servo_move_timer_interrupt_handler(void *para);
 
 
 
