@@ -37,8 +37,12 @@ GroveServo::GroveServo(int pin)
 
     suli_pwm_init(this->io, pin);
     suli_pwm_frequency(this->io, 50);
-    //suli_pin_write(this->io, SULI_LOW);
     last_degree = 0;
+
+    percent_start = 0;
+    percent_end = 0;
+    percent_increment = 0;
+    percent_current = 0;
 }
 
 
@@ -46,7 +50,7 @@ GroveServo::GroveServo(int pin)
 bool GroveServo::write_angle(int degree)
 {
     last_degree = degree;
-    degree = constrain(degree, 20, 160);
+    degree = constrain(degree, 0, 180);
     float percent = 10 * degree / 180 + 2.5;
     suli_pwm_frequency(this->io, 50);
     suli_pwm_output(this->io, percent);
@@ -56,12 +60,27 @@ bool GroveServo::write_angle(int degree)
 bool GroveServo::write_angle_motion_in_seconds(int degree, int seconds)
 {
     last_degree = degree;
-    degree = constrain(degree, 20, 160);
+    degree = constrain(degree, 0, 180);
     float percent = 10 * degree / 180 + 2.5;
     suli_pwm_frequency(this->io, 50);
     suli_pwm_output(this->io, percent);
 
     suli_timer_install(timer, seconds * 1000000, grove_servo_timer_interrupt_handler, this, false);
+
+    return true;
+}
+
+bool GroveServo::write_move_over_time(int degree_start, int degree_end, int seconds)
+{
+    last_degree = degree;
+    degree = constrain(degree, 0, 180);
+    percent_start = 10 * degree_start / 180 + 2.5;
+    percent_end = 10 * degree_end / 180 + 2.5;
+    percent_increment = (percent_end - percent_start) / (seconds / 50);
+    suli_pwm_frequency(this->io, 50);
+    suli_pwm_output(this->io, percent);
+
+    suli_timer_install(timer, 20000, grove_servo_move_timer_interrupt_handler, this, true);
 
     return true;
 }
@@ -78,3 +97,19 @@ static void grove_servo_timer_interrupt_handler(void *para)
     suli_pwm_output(g->io, 0);
 }
 
+static void grove_servo_move_timer_interrupt_handler(void *para)
+{
+    GroveServo *g = (GroveServo *)para;
+
+    g->percent_current = g->percent_current + g->percent_increment;
+
+    suli_pwm_frequency(this->io, 50);
+    suli_pwm_output(this->io, g->percent_current);
+
+    if (g->percent_increment > 0 && g->percent_current >= percent_end) {
+      suli_timer_remove(g->timer);
+    } else if (g->percent_increment < 0 && g->percent_current <= percent_end) {
+      suli_timer_remove(g->timer);
+    }
+
+}

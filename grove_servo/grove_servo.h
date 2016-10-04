@@ -70,6 +70,16 @@ public:
     bool write_angle_motion_in_seconds(int degree, int seconds);
 
     /**
+     * Drive the servo to to a different angle over a specified period of time <br>
+     * @param degree_start - the starting angle in unit degrees
+     * @param degree_end - the ending angle in unit degrees
+     * @param seconds - the duration of the motion
+     *
+     * @return bool
+     */
+    bool write_move_over_time(int degree_start, int degree_end, int seconds)
+
+    /**
      * Read back the angle of this servo
      *
      * @param degree - the angle in unit degress
@@ -83,6 +93,10 @@ public:
     PWM_T *io;
     TIMER_T *timer;
     int last_degree;
+
+    float percent_start;
+    float percent_end;
+    float percent_increment;
 
 };
 
