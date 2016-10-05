@@ -121,8 +121,6 @@ bool GroveRoomba::write_drive_radius(float vel, float radius) {
 bool GroveRoomba::write_drive_wheels(float leftVel, float rightVel) {
   const float boundedLeftVel = BOUND_CONST(leftVel, -0.5, 0.5);
   const float boundedRightVel = BOUND_CONST(rightVel, -0.5, 0.5);
-  requestedLeftVel = boundedLeftVel;
-  requestedRightVel = boundedRightVel;
   int16_t leftCmd = roundf(boundedLeftVel * 1000);
   int16_t rightCmd = roundf(boundedRightVel * 1000);
 
@@ -241,6 +239,53 @@ bool GroveRoomba::read_sensor(uint16_t *value, uint8_t sensor) {
       last_error="invalid packet length";
       return false;
   }
+}
+
+bool GroveRoomba::read_distance(float *value) {
+  uint8_t cmd[2] = { OC_SENSORS, ID_DISTANCE };
+  _drain_uart();
+  suli_uart_write_bytes(uart, cmd, 2);
+  suli_delay_ms(5);
+  byte data[6];
+  int n = suli_uart_read_bytes_timeout(uart,data,6,100);
+  int mm = (data[4] << 8) | data[5];
+  value = mm / 1000;
+  return true;
+}
+
+bool GroveRoomba::read_angle(float *value) {
+  uint8_t cmd[2] = { OC_SENSORS, ID_ANGLE };
+  _drain_uart();
+  suli_uart_write_bytes(uart, cmd, 2);
+  suli_delay_ms(5);
+  byte data[6];
+  int n = suli_uart_read_bytes_timeout(uart,data,6,100);
+  int rad = (data[4] << 8) | data[5];
+  float degrees = (float)(rad / 0.324056);
+  value = &degrees;
+  return true;
+}
+
+bool GroveRoomba::read_left_encoder_count(int16_t *value) {
+  uint8_t cmd[2] = { OC_SENSORS, ID_LEFT_ENC };
+  _drain_uart();
+  suli_uart_write_bytes(uart, cmd, 2);
+  suli_delay_ms(5);
+  byte data[6];
+  int n = suli_uart_read_bytes_timeout(uart,data,6,100);
+  value = (data[4] << 8) | data[5];
+  return true;
+}
+
+bool GroveRoomba::read_right_encoder_count(int16_t *value) {
+  uint8_t cmd[2] = { OC_SENSORS, ID_RIGHT_ENC };
+  _drain_uart();
+  suli_uart_write_bytes(uart, cmd, 2);
+  suli_delay_ms(5);
+  byte data[6];
+  int n = suli_uart_read_bytes_timeout(uart,data,6,100);
+  value = (data[4] << 8) | data[5];
+  return true;
 }
 
 bool GroveRoomba::sendOpcode(const Opcode& code) {

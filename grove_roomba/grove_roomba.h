@@ -93,7 +93,7 @@ public:
      * @param rightVel is in m/s bounded between [-0.5, 0.5]
      * @return bool - true if successful, false otherwise
      */
-    bool write_drive_wheels(float leftVel, float rightVel)
+    bool write_drive_wheels(float leftVel, float rightVel);
 
     /** Drive straight at an average wheel velocity
      * @param velocity is in m/s bounded between [-0.5, 0.5]
@@ -169,6 +169,31 @@ public:
      * @return bool - true if successful, false otherwise
      */
     bool read_sensor(uint16_t *value, uint8_t sensor);
+
+    /** Read distance travelled since last request
+     * @param value is distance in meters
+     * @return bool - true if successful, false otherwise
+     */
+    bool read_distance(float *value);
+
+    /** Read angles turned since last request
+     * @param value is the angle in degrees
+     * @return bool - true if successful, false otherwise
+     */
+    bool read_angle(float *value);
+
+    /** Read left encoder count
+     * @param value is encoder count - N counts * (PI * 72.0 / 508.8) = mm
+     * @return bool - true if successful, false otherwise
+     */
+    bool read_left_encoder_count(int16_t *value);
+
+    /** Read right encoder count
+     * @param value is encoder count - N counts * (PI * 72.0 / 508.8) = mm
+     * @return bool - true if successful, false otherwise
+     */
+    bool read_right_encoder_count(int16_t *value);
+
 
     enum SensorPacketID {
       ID_GROUP_0 = 0,
