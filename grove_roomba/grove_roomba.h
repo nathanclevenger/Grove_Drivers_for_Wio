@@ -88,6 +88,13 @@ public:
      */
     bool write_drive_radius(float velocity, float radius);
 
+    /** Direct drive with each wheel at a specified velocity
+     * @param leftVel is in m/s bounded between [-0.5, 0.5]
+     * @param rightVel is in m/s bounded between [-0.5, 0.5]
+     * @return bool - true if successful, false otherwise
+     */
+    bool write_drive_wheels(float leftVel, float rightVel)
+
     /** Drive straight at an average wheel velocity
      * @param velocity is in m/s bounded between [-0.5, 0.5]
      * @return bool - true if successful, false otherwise

@@ -118,13 +118,32 @@ bool GroveRoomba::write_drive_radius(float vel, float radius) {
   return true;
 }
 
+bool GroveRoomba::write_drive_wheels(float leftVel, float rightVel) {
+  const float boundedLeftVel = BOUND_CONST(leftVel, -0.5, 0.5);
+  const float boundedRightVel = BOUND_CONST(rightVel, -0.5, 0.5);
+  requestedLeftVel = boundedLeftVel;
+  requestedRightVel = boundedRightVel;
+  int16_t leftCmd = roundf(boundedLeftVel * 1000);
+  int16_t rightCmd = roundf(boundedRightVel * 1000);
+
+  uint8_t cmd[5] = { OC_DRIVE_DIRECT,
+                     rightCmd >> 8,
+                     rightCmd & 0xff,
+                     leftCmd >> 8,
+                     leftCmd & 0xff
+                   };
+   suli_uart_write_bytes(uart, cmd, 5);
+
+   return true;
+}
+
 bool GroveRoomba::write_drive_straight(float vel) {
-  return write_drive_radius(vel, STRAIGHT_RADIUS);
+  return write_drive_wheels(vel, vel);
 }
 
 bool GroveRoomba::write_drive_straight_duration(float vel, float duration) {
   suli_timer_install(timer, duration * 1000000, grove_roomba_timer_interrupt_handler, this, false);
-  return write_drive_radius(vel, STRAIGHT_RADIUS);
+  return write_drive_straight(vel);
 }
 
 bool GroveRoomba::write_drive_straight_distance(float vel, float distance) {
@@ -132,21 +151,21 @@ bool GroveRoomba::write_drive_straight_distance(float vel, float distance) {
 }
 
 bool GroveRoomba::write_turn_in_place_counter_clockwise(float vel) {
-  return write_drive_radius(vel, IN_PLACE_RADIUS);
+  return write_drive_wheels(-vel, vel);
 }
 
 bool GroveRoomba::write_turn_in_place_clockwise(float vel) {
-  return write_drive_radius(vel, -IN_PLACE_RADIUS);
+  return write_drive_wheels(vel, -vel);
 }
 
 bool GroveRoomba::write_turn_in_place_counter_clockwise_duration(float vel, float duration) {
   suli_timer_install(timer, duration * 1000000, grove_roomba_timer_interrupt_handler, this, false);
-  return write_drive_radius(vel, IN_PLACE_RADIUS);
+  return write_turn_in_place_counter_clockwise(vel);
 }
 
 bool GroveRoomba::write_turn_in_place_clockwise_duration(float vel, float duration) {
   suli_timer_install(timer, duration * 1000000, grove_roomba_timer_interrupt_handler, this, false);
-  return write_drive_radius(vel, -IN_PLACE_RADIUS);
+  return write_turn_in_place_clockwise(vel);
 }
 
 bool GroveRoomba::write_turn_in_place_counter_clockwise_degrees(float vel, float degrees) {
